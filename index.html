@@ -1,1 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Niet EnterSports</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      height: 100%;
+    }
+    .video-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #video-player {
+      width: 100%;
+      height: 100%;
+    }
+    .logo {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+    .logo img {
+      width: 100px;
+      height: auto;
+    }
+    .quality-select {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 15;
+    }
+    .quality-select select {
+      background-color: #2c2c2c;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      display: none;
+      z-index: 20;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    .popup-content {
+      background-color: #2c2c2c;
+      color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 500px;
+    }
+    .popup button {
+      background-color: #6a4e23;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+</head>
+<body>
+  <div class="video-container">
+    <div id="video-player"></div>
+    <div class="logo">
+      <img src="https://raw.githubusercontent.com/AkashGillNiet/TNT3/refs/heads/main/nes.png" alt="Logo">
+    </div>
+    <div class="quality-select">
+      <select id="quality-select">
+        <option value="auto">Auto</option>
+        <option value="144">144p</option>
+        <option value="240">240p</option>
+        <option value="360">360p</option>
+        <option value="480">480p</option>
+        <option value="720">720p</option>
+        <option value="1080">1080p</option>
+      </select>
+    </div>
+  </div>
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <h2>Join our Telegram Channel</h2>
+      <button id="join-now">Join Now</button>
+      <button id="already-joined">Already Joined</button>
+    </div>
+  </div>
 
+  <!-- Scattered Parts of the Streaming URL with Token -->
+  <script>
+    const base1 = "https://";
+    const base2 = "puc2.mylife1.top:8088";
+    const path1 = "/mobile";
+    const path2 = "/stream8_160p";
+    const file = "/playlist.m3u8";
+    const query1 = "?vidictid=200848154763";
+    const query2 = "&id=29";
+    const query3 = "&pk=6960044d4f967ec82c495eb0cee2124edff7004cc544053b9c84a551711353a83113c88630f05912abf41deb2ba939c70be01272947168925f8443332b77e591";
+    const token = generateToken();  // A function to generate a secure token
+
+    function generateToken() {
+      // Example: Using the current time and some secret key to generate a token
+      const secretKey = "s3cr3t_key";
+      const timestamp = Date.now();
+      const rawToken = `${timestamp}:${secretKey}`;
+      return btoa(rawToken);  // Base64 encode the token
+    }
+
+    function getStreamUrl() {
+      return `${base1}${base2}${path1}${path2}${file}${query1}${query2}${query3}&token=${token}`;
+    }
+
+    // Initialize Clappr Player with the reconstructed URL
+    const player = new Clappr.Player({
+      source: getStreamUrl(),
+      parentId: "#video-player",
+      autoPlay: true,
+      height: "100%",
+      width: "100%",
+      mute: false,
+      playback: {
+        playInline: true,
+        preload: "auto",
+      },
+      mediacontrol: {
+        seekbar: "#FFF",
+        buttons: "#FFF",
+      },
+    });
+
+    // Handle quality selection
+    const qualitySelect = document.getElementById("quality-select");
+    qualitySelect.addEventListener("change", (event) => {
+      const selectedQuality = event.target.value;
+
+      if (selectedQuality === "auto") {
+        player.configure({ abr: { enabled: true } }); // Enable auto quality
+      } else {
+        player.configure({ abr: { enabled: false } }); // Disable auto quality
+        const resolutionMap = {
+          144: "stream2_144p/playlist.m3u8",
+          240: "stream2_240p/playlist.m3u8",
+          360: "stream2_360p/playlist.m3u8",
+          480: "stream2_480p/playlist.m3u8",
+          720: "stream2_720p/playlist.m3u8",
+          1080: "stream2_1080p/playlist.m3u8",
+        };
+        const newSource = `${base1}${base2}${path1}/${resolutionMap[selectedQuality]}?token=${token}`;
+        player.load(newSource);
+      }
+    });
+
+    // Show popup on load
+    window.onload = function () {
+      document.getElementById("popup").style.display = "flex";
+    };
+
+    // Popup button handlers
+    document.getElementById("join-now").onclick = function () {
+      window.open("https://t.me/SportsLiveLink18", "_blank");
+      document.getElementById("popup").style.display = "none";
+    };
+
+    document.getElementById("already-joined").onclick = function () {
+      document.getElementById("popup").style.display = "none";
+    };
+  </script>
+</body>
+</html>
