@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Niet EnterSports</title>
+  <link href="https://cdn.jsdelivr.net/npm/shaka-player@3.0.3/dist/controls.css" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -91,7 +92,7 @@
       <img src="https://raw.githubusercontent.com/AkashGillNiet/TNT3/refs/heads/main/nes.png" alt="Logo">
     </div>
     <div class="quality-select">
-      <select id="quality-select">
+      <select id="quality">
         <option value="auto">Auto</option>
         <option value="144">144p</option>
         <option value="240">240p</option>
@@ -109,75 +110,76 @@
       <button id="already-joined">Already Joined</button>
     </div>
   </div>
-
-  <!-- Scattered Parts of the Streaming URL with Token -->
+  
+  <!-- Fragments Scattered Across Code -->
+  <script>const baseDomain = "https://tes1.mylife1.top:8088/mobile/stream1_240p/playlist.m3u8?vidictid=201102979007&id=2&pk=af6ef4d0ce777021be1d91bc757a383e8e9cf0e4b2555beee7b44e8cd6a8b78d134ffdd4e34e887515b3c55092a7f0af83d62b65cacf1147b499c2ea4c40376c";</script>
   <script>
-    const base1 = "https://";
-    const base2 = "puc2.mylife1.top:8088";
-    const path1 = "/mobile";
-    const path2 = "/stream8_160p";
-    const file = "/playlist.m3u8";
-    const query1 = "?vidictid=200864223122";
-    const query2 = "&id=29";
-    const query3 = "&pk=6a3d4b6e4fb556a523fff2ad100f73bdb8a87c3356ee2e2f0b250c93355e2b321a2d92121fcf003391716e481d8a90803237092398bff140f51102bb7c80e3b0";
-    const token = generateToken();  // A function to generate a secure token
-
-    function generateToken() {
-      // Example: Using the current time and some secret key to generate a token
-      const secretKey = "s3cr3t_key";
-      const timestamp = Date.now();
-      const rawToken = `${timestamp}:${secretKey}`;
-      return btoa(rawToken);  // Base64 encode the token
+    
+    // Function to reconstruct the URL
+    function constructURL() {
+      return baseDomain;
     }
 
-    function getStreamUrl() {
-      return `${base1}${base2}${path1}${path2}${file}${query1}${query2}${query3}&token=${token}`;
-    }
+    // Initialize Clappr Player
+    let playerInstance;
 
-    // Initialize Clappr Player with the reconstructed URL
-    const player = new Clappr.Player({
-      source: getStreamUrl(),
-      parentId: "#video-player",
-      autoPlay: true,
-      height: "100%",
-      width: "100%",
-      mute: false,
-      playback: {
-        playInline: true,
-        preload: "auto",
-      },
-      mediacontrol: {
-        seekbar: "#FFF",
-        buttons: "#FFF",
-      },
-    });
-
-    // Handle quality selection
-    const qualitySelect = document.getElementById("quality-select");
-    qualitySelect.addEventListener("change", (event) => {
-      const selectedQuality = event.target.value;
-
-      if (selectedQuality === "auto") {
-        player.configure({ abr: { enabled: true } }); // Enable auto quality
-      } else {
-        player.configure({ abr: { enabled: false } }); // Disable auto quality
-        const resolutionMap = {
-          144: "stream2_144p/playlist.m3u8",
-          240: "stream2_240p/playlist.m3u8",
-          360: "stream2_360p/playlist.m3u8",
-          480: "stream2_480p/playlist.m3u8",
-          720: "stream2_720p/playlist.m3u8",
-          1080: "stream2_1080p/playlist.m3u8",
-        };
-        const newSource = `${base1}${base2}${path1}/${resolutionMap[selectedQuality]}?token=${token}`;
-        player.load(newSource);
+    function initializePlayer(url) {
+      if (playerInstance) {
+        playerInstance.destroy(); // Clean up the previous instance
       }
-    });
 
-    // Show popup on load
+      playerInstance = new Clappr.Player({
+        source: url,
+        parentId: "#video-player",
+        autoPlay: true,
+        height: "100%",
+        width: "100%",
+        mute: false,
+        playback: {
+          playInline: true,
+          preload: "auto",
+        },
+        mediacontrol: {
+          seekbar: "#FFF",
+          buttons: "#FFF",
+        },
+      });
+    }
+
+    async function loadStream() {
+      try {
+        const streamUrl = constructURL(); // Combine fragments dynamically
+        initializePlayer(streamUrl);
+        console.log("The video has been loaded!");
+      } catch (error) {
+        console.error("Error loading the video:", error);
+      }
+    }
+
+    // Handle window load
     window.onload = function () {
       document.getElementById("popup").style.display = "flex";
+      loadStream();
     };
+
+    // Handle quality selection
+    const qualitySelect = document.getElementById("quality");
+    qualitySelect.addEventListener("change", () => {
+      const selectedQuality = qualitySelect.value;
+
+      const resolutionMap = {
+        auto: "/stream6_240p",
+        144: "/stream6_144p",
+        240: "/stream6_240p",
+        360: "/stream6_360p",
+        480: "/stream6_480p",
+        720: "/stream6_720p",
+        1080: "/stream6_1080p",
+      };
+
+      pathSegment2 = resolutionMap[selectedQuality] || "/stream6_240p";
+      loadStream(); // Reload the player with the selected quality
+    });
 
     // Popup button handlers
     document.getElementById("join-now").onclick = function () {
