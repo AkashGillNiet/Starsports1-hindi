@@ -1,195 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Niet EnterSports</title>
-  <link href="https://cdn.jsdelivr.net/npm/shaka-player@3.0.3/dist/controls.css" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      height: 100%;
-    }
-    .video-container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    #video-player {
-      width: 100%;
-      height: 100%;
-    }
-    .logo {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-    }
-    .logo img {
-      width: 100px;
-      height: auto;
-    }
-    .quality-select {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 15;
-    }
-    .quality-select select {
-      background-color: #2c2c2c;
-      color: #fff;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .popup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(5px);
-      display: none;
-      z-index: 20;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
-    .popup-content {
-      background-color: #2c2c2c;
-      color: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      width: 80%;
-      max-width: 500px;
-    }
-    .popup button {
-      background-color: #6a4e23;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>playmax</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Video Container with Stroke */
+        #streaming-container {
+            width: 90%;
+            max-width: 900px;
+            margin-top: 20px;
+            padding: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Video Player */
+        video {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 10px;
+        }
+
+        /* Quality & Telegram Button */
+        #quality-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        select, button {
+            padding: 8px 15px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        select {
+            background-color: black;
+            color: white;
+            border: 1px solid white;
+        }
+
+        #telegram-button {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Video List Section */
+        #video-list {
+            width: 90%;
+            max-width: 900px;
+            margin-top: 20px;
+        }
+
+        .video-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        /* Placeholder for Thumbnail (Loading Animation) */
+        .video-item .thumbnail {
+            width: 120px;
+            height: 70px;
+            border-radius: 5px;
+            margin-right: 10px;
+            background: linear-gradient(90deg, #222 25%, #444 50%, #222 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        /* Placeholder for Title (Loading Animation) */
+        .video-item .title {
+            width: 60%;
+            height: 18px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #222 25%, #444 50%, #222 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        /* Shimmer Effect Animation */
+        @keyframes shimmer {
+            0% { background-position: -100% 0; }
+            100% { background-position: 100% 0; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
 </head>
 <body>
-  <div class="video-container">
-    <div id="video-player"></div>
-    <div class="logo">
-      <img src="https://raw.githubusercontent.com/AkashGillNiet/TNT3/refs/heads/main/nes.png" alt="Logo">
+
+<!-- Video Streaming Section -->
+<div id="streaming-container">
+    <video id="videoPlayer" controls></video>
+    <div id="quality-container">
+        <select id="quality">
+            <option value="-1" selected>Auto</option>
+        </select>
+        <button id="telegram-button" onclick="joinTelegram()">Join Telegram</button>
     </div>
-    <div class="quality-select">
-      <select id="quality">
-        <option value="auto">Auto</option>
-        <option value="144">144p</option>
-        <option value="240">240p</option>
-        <option value="360">360p</option>
-        <option value="480">480p</option>
-        <option value="720">720p</option>
-        <option value="1080">1080p</option>
-      </select>
+</div>
+
+<!-- Video List Section with Dynamic Data & Shimmer Effect -->
+<div id="video-list">
+    <div class="video-item" data-url="colorscineplexhd.html">
+        <div class="thumbnail" data-src=""></div>
+        <div class="title" data-text="Colors Cineplex Hd"></div>
     </div>
-  </div>
-  <div class="popup" id="popup">
-    <div class="popup-content">
-      <h2>Join our Telegram Channel</h2>
-      <button id="join-now">Join Now</button>
-      <button id="already-joined">Already Joined</button>
+
+    <div class="video-item" data-url="sports18khel.html">
+        <div class="thumbnail" data-src=""></div>  <!-- No Thumbnail, So Animation -->
+        <div class="title" data-text="Sports 18 Khel"></div>  <!-- No Title, So Animation -->
     </div>
-  </div>
-  
-  <!-- Fragments Scattered Across Code -->
-  <script>const baseDomain = "https://puc2.mylife1.top:8088/mobile/stream8_240p/playlist.m3u8?vidictid=201135790143&id=30&pk=dd0df0c64e56bd098472afc1ddaf8c9a87e4a640a352fcb7b16c8933415fd37d29a1ad94ceddcaf1c74260f88c7374d103071b9af446a6a45d6264a0477ee8cc";</script>
-  <script>
-    
-    // Function to reconstruct the URL
-    function constructURL() {
-      return baseDomain;
+
+    <div class="video-item" data-url="sports18hd1.html">
+        <div class="thumbnail" data-src=""></div>
+        <div class="title" data-text="Sports 18 Hd 1"></div>
+    </div>
+
+    <div class="video-item" data-url="https://example.com/video4">
+        <div class="thumbnail" data-src=""></div>
+        <div class="title" data-text=""></div>
+    </div>
+
+    <div class="video-item" data-url="https://example.com/video5">
+        <div class="thumbnail" data-src=""></div>
+        <div class="title" data-text=""></div>
+    </div>
+</div>
+
+<script>
+    const video = document.getElementById('videoPlayer');
+    const qualitySelector = document.getElementById('quality');
+    const hls = new Hls();
+
+    // Direct HLS URL
+    const hlsUrl = "https://allinonereborn.com/test.m3u8?id=418"; // यहाँ अपना HLS लिंक डालें
+
+    if (Hls.isSupported()) {
+        hls.loadSource(hlsUrl);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+            const levels = hls.levels;
+            levels.forEach((level, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${level.height}p`; // Quality in resolution
+                qualitySelector.appendChild(option);
+            });
+        });
+
+        // Handle Quality Change
+        qualitySelector.addEventListener('change', function () {
+            const quality = parseInt(qualitySelector.value);
+            hls.currentLevel = quality === -1 ? -1 : quality;
+        });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = hlsUrl;
     }
 
-    // Initialize Clappr Player
-    let playerInstance;
-
-    function initializePlayer(url) {
-      if (playerInstance) {
-        playerInstance.destroy(); // Clean up the previous instance
-      }
-
-      playerInstance = new Clappr.Player({
-        source: url,
-        parentId: "#video-player",
-        autoPlay: true,
-        height: "100%",
-        width: "100%",
-        mute: false,
-        playback: {
-          playInline: true,
-          preload: "auto",
-        },
-        mediacontrol: {
-          seekbar: "#FFF",
-          buttons: "#FFF",
-        },
-      });
+    // Function to open Telegram channel
+    function joinTelegram() {
+        window.open('https://t.me/sportslivelink18', '_blank');
     }
 
-    async function loadStream() {
-      try {
-        const streamUrl = constructURL(); // Combine fragments dynamically
-        initializePlayer(streamUrl);
-        console.log("The video has been loaded!");
-      } catch (error) {
-        console.error("Error loading the video:", error);
-      }
-    }
+    // Apply Thumbnails & Titles Dynamically
+    document.querySelectorAll(".video-item").forEach(item => {
+        const thumbnailDiv = item.querySelector(".thumbnail");
+        const titleDiv = item.querySelector(".title");
+        const thumbnailSrc = thumbnailDiv.getAttribute("data-src");
+        const titleText = titleDiv.getAttribute("data-text");
 
-    // Handle window load
-    window.onload = function () {
-      document.getElementById("popup").style.display = "flex";
-      loadStream();
-    };
+        if (thumbnailSrc) {
+            thumbnailDiv.style.background = `url(${thumbnailSrc}) center/cover`;
+            thumbnailDiv.style.animation = "none"; // Remove shimmer animation
+        }
 
-    // Handle quality selection
-    const qualitySelect = document.getElementById("quality");
-    qualitySelect.addEventListener("change", () => {
-      const selectedQuality = qualitySelect.value;
+        if (titleText) {
+            titleDiv.innerText = titleText;
+            titleDiv.style.background = "none"; // Remove shimmer animation
+        }
 
-      const resolutionMap = {
-        auto: "/stream6_240p",
-        144: "/stream6_144p",
-        240: "/stream6_240p",
-        360: "/stream6_360p",
-        480: "/stream6_480p",
-        720: "/stream6_720p",
-        1080: "/stream6_1080p",
-      };
-
-      pathSegment2 = resolutionMap[selectedQuality] || "/stream6_240p";
-      loadStream(); // Reload the player with the selected quality
+        // Click event to open video link
+        item.addEventListener("click", function () {
+            const videoUrl = item.getAttribute("data-url");
+            if (videoUrl) {
+                window.open(videoUrl, "_blank");
+            }
+        });
     });
 
-    // Popup button handlers
-    document.getElementById("join-now").onclick = function () {
-      window.open("https://t.me/SportsLiveLink18", "_blank");
-      document.getElementById("popup").style.display = "none";
-    };
+</script>
 
-    document.getElementById("already-joined").onclick = function () {
-      document.getElementById("popup").style.display = "none";
-    };
-  </script>
 </body>
 </html>
