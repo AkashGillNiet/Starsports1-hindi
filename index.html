@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>playmax</title>
+    <link href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css" rel="stylesheet">
     <style>
         body {
             background-color: black;
@@ -25,13 +26,6 @@
             border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             background-color: rgba(255, 255, 255, 0.05);
-        }
-        
-        /* Video Player */
-        video {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            border-radius: 10px;
         }
 
         /* Quality & Telegram Button */
@@ -108,13 +102,13 @@
             100% { background-position: 100% 0; }
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.js"></script>
 </head>
 <body>
 
 <!-- Video Streaming Section -->
 <div id="streaming-container">
-    <video id="videoPlayer" controls></video>
+    <div id="dplayer"></div>
     <div id="quality-container">
         <select id="quality">
             <option value="-1" selected>Auto</option>
@@ -152,35 +146,14 @@
 </div>
 
 <script>
-    const video = document.getElementById('videoPlayer');
-    const qualitySelector = document.getElementById('quality');
-    const hls = new Hls();
-
-    // Direct HLS URL
-    const hlsUrl = "https://allinonereborn.com/test.m3u8?id=418"; // यहाँ अपना HLS लिंक डालें
-
-    if (Hls.isSupported()) {
-        hls.loadSource(hlsUrl);
-        hls.attachMedia(video);
-
-        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-            const levels = hls.levels;
-            levels.forEach((level, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `${level.height}p`; // Quality in resolution
-                qualitySelector.appendChild(option);
-            });
-        });
-
-        // Handle Quality Change
-        qualitySelector.addEventListener('change', function () {
-            const quality = parseInt(qualitySelector.value);
-            hls.currentLevel = quality === -1 ? -1 : quality;
-        });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = hlsUrl;
-    }
+    // DPlayer setup
+    const player = new DPlayer({
+        container: document.getElementById('dplayer'),
+        video: {
+            url: "https://allinonereborn.com/test.m3u8?id=418", // Replace with your HLS URL
+            type: 'hls'
+        }
+    });
 
     // Function to open Telegram channel
     function joinTelegram() {
@@ -212,7 +185,6 @@
             }
         });
     });
-
 </script>
 
 </body>
